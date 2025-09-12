@@ -745,7 +745,7 @@ export default function SteelCutCalculatorPage() {
                       No Layout Calculated
                     </h3>
                     <p className="mt-1 text-sm">
-                      Enter your dimensions and click 'Calculate Layout' to see
+                      Enter your dimensions and click &apos;Calculate Layout&apos; to see
                       the results.
                     </p>
                   </div>
