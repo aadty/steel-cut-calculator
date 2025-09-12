@@ -11,7 +11,7 @@ export default function SteelCutCalculatorPage() {
         { id: 1, width: 600, height: 1000, quantity: 5 },
         { id: 2, width: 200, height: 400, quantity: 12 },
     ]);
-    // State for the calculated layouts. Each layout now contains pieces and waste rectangles.
+    // State for the calculated layouts. Each layout now contains pieces, waste, and its own stats.
     const [layouts, setLayouts] = useState([]);
     // State for statistics
     const [stats, setStats] = useState({ totalPieces: 0, usedArea: 0, wasteArea: 0, totalBaseArea: 0, efficiency: 0, platesRequired: 0 });
@@ -173,7 +173,15 @@ export default function SteelCutCalculatorPage() {
 
                 if (currentPlateLayout.length > 0) {
                     const wasteRects = calculateWasteRects(basePlate, currentPlateLayout);
-                    allLayouts.push({ pieces: currentPlateLayout, waste: wasteRects });
+                    const plateUsedArea = currentPlateLayout.reduce((acc, p) => acc + (p.width * p.height), 0);
+                    const plateBaseArea = basePlate.width * basePlate.height;
+                    const plateStats = {
+                        usedArea: plateUsedArea,
+                        wasteArea: plateBaseArea - plateUsedArea,
+                        efficiency: ((plateUsedArea / plateBaseArea) * 100).toFixed(2),
+                        pieceCount: currentPlateLayout.length
+                    };
+                    allLayouts.push({ pieces: currentPlateLayout, waste: wasteRects, stats: plateStats });
                 }
                 
                 if(piecesToPlace.length === remainingPieces.length) break; 
@@ -204,8 +212,8 @@ export default function SteelCutCalculatorPage() {
         if (!basePlate.width || !basePlate.height || !layout || !layout.pieces) return null;
         
         const { pieces, waste } = layout;
-        const colors = ["#3b82f6", "#22c55e", "#eab308", "#8b5cf6", "#ec4899", "#14b8a6"];
-        const wasteColor = "#ef4444"; 
+        const colors = ["#60a5fa", "#4ade80", "#facc15", "#a78bfa", "#f472b6", "#2dd4bf"]; // New Palette
+        const wasteColor = "#f87171"; // Softer Red
 
         const rotatedViewBoxWidth = basePlate.height;
         const rotatedViewBoxHeight = basePlate.width;
@@ -229,6 +237,17 @@ export default function SteelCutCalculatorPage() {
                         <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
                             <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" strokeWidth="2"/>
                         </pattern>
+                        <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                            <feOffset dx="2" dy="2" result="offsetblur"/>
+                            <feComponentTransfer>
+                                <feFuncA type="linear" slope="0.5"/>
+                            </feComponentTransfer>
+                            <feMerge> 
+                                <feMergeNode/>
+                                <feMergeNode in="SourceGraphic"/> 
+                            </feMerge>
+                        </filter>
                     </defs>
                     
                     <rect x="0" y="0" width={rotatedViewBoxWidth} height={rotatedViewBoxHeight} fill="url(#grid)" stroke="#9ca3af" strokeWidth="4"/>
@@ -249,7 +268,7 @@ export default function SteelCutCalculatorPage() {
                                     width={rotatedRectWidth}
                                     height={rotatedRectHeight}
                                     fill={wasteColor}
-                                    fillOpacity="0.8"
+                                    fillOpacity="0.9"
                                 />
                                 {showText && (
                                     <text
@@ -278,14 +297,14 @@ export default function SteelCutCalculatorPage() {
                         const rotatedPieceHeight = piece.width;
 
                         return (
-                            <g key={piece.pieceId}>
+                            <g key={piece.pieceId} style={{ filter: 'url(#dropShadow)'}}>
                                 <rect
                                     x={rotatedX}
                                     y={rotatedY}
                                     width={rotatedPieceWidth}
                                     height={rotatedPieceHeight}
                                     fill={colors[piece.originalId % colors.length]}
-                                    fillOpacity="0.7"
+                                    fillOpacity="0.85"
                                     stroke="#1f2937"
                                     strokeWidth="4"
                                     strokeDasharray="15 8"
@@ -332,9 +351,9 @@ export default function SteelCutCalculatorPage() {
                     .print-visualization { page-break-inside: avoid; }
                 }
             ` }} />
-            <main className="bg-gray-100 flex items-center justify-center min-h-screen py-8 no-print">
+            <main className="bg-gray-100 flex items-center justify-center min-h-screen py-8">
                 <div className="w-full max-w-7xl mx-auto p-4 md:p-8 bg-white rounded-2xl shadow-lg my-8 print-container">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center no-print">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-800 mb-2">Steel Cut Calculator</h1>
                             <p className="text-gray-500 mb-8">Optimize your steel plate cutting and minimize waste.</p>
@@ -347,7 +366,7 @@ export default function SteelCutCalculatorPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column: Inputs and Controls */}
-                        <div className="lg:col-span-1 flex flex-col space-y-6">
+                        <div className="lg-col-span-1 flex flex-col space-y-6 no-print">
                             {/* Base Plate & Options */}
                             <div className="bg-gray-50 p-4 rounded-lg">
                                 <h2 className="text-xl font-semibold text-gray-700 mb-3">Base Plate & Options</h2>
@@ -410,7 +429,15 @@ export default function SteelCutCalculatorPage() {
                            {layouts.length > 0 ? (
                                 layouts.map((layout, index) => (
                                     <div key={index} className="bg-white p-4 rounded-xl shadow-md print-visualization">
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Plate {index + 1}</h3>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h3 className="text-lg font-bold text-gray-800">Plate {index + 1}</h3>
+                                            {layout.stats && (
+                                                <div className="text-sm font-semibold">
+                                                    <span className="text-gray-600">Usage: </span>
+                                                    <span className="text-blue-600">{layout.stats.efficiency}%</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="bg-white rounded-lg"><Visualization basePlate={basePlate} layout={layout} /></div>
                                     </div>
                                 ))
