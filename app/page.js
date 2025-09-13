@@ -5,11 +5,10 @@ import React, { useState } from "react";
 // Main App Component for the Next.js page
 export default function SteelCutCalculatorPage() {
   // State for base plate dimensions
-  const [basePlate, setBasePlate] = useState({ width: 1200, height: 3000 });
+  const [basePlate, setBasePlate] = useState({ width: 0, height: 0 });
   // State for the list of cuts needed
   const [cuts, setCuts] = useState([
-    { id: 1, width: 600, height: 1000, quantity: 5 },
-    { id: 2, width: 200, height: 400, quantity: 12 },
+    { id: 1, width: 0, height: 0, quantity: 0 },
   ]);
   // State for the calculated layouts. Each layout now contains pieces, waste, and its own stats.
   const [layouts, setLayouts] = useState([]);
@@ -490,7 +489,17 @@ export default function SteelCutCalculatorPage() {
                     .no-print { display: none !important; }
                     main { padding: 0; margin: 0; }
                     .print-container { box-shadow: none !important; margin: 0; max-width: 100% !important; border-radius: 0; }
-                    .print-visualization { page-break-inside: avoid; }
+                    .print-visualization { 
+                        page-break-inside: avoid;
+                        max-height: 95vh;
+                     }
+                    .print-grid-container { display: block !important; }
+                    .print-results-column {
+                        width: 100% !important;
+                        min-height: auto !important;
+                        max-height: none !important;
+                        overflow: visible !important;
+                    }
                 }
             `,
         }}
@@ -500,10 +509,10 @@ export default function SteelCutCalculatorPage() {
           <div className="flex justify-between items-center no-print">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Steel Cut Calculator
+                Calculator Layout Cutting Besi
               </h1>
               <p className="text-gray-500 mb-8">
-                Optimize your steel plate cutting and minimize waste.
+                Optimalkan pemotongan plat besi Anda.
               </p>
             </div>
             <button
@@ -522,17 +531,17 @@ export default function SteelCutCalculatorPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>Print Results</span>
+              <span>Print</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 print-grid-container">
             {/* Left Column: Inputs and Controls */}
             <div className="lg-col-span-1 flex flex-col space-y-6 no-print">
               {/* Base Plate & Options */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-700 mb-3">
-                  Base Plate & Options
+                  Ukuran Bahan Besi
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
@@ -541,16 +550,16 @@ export default function SteelCutCalculatorPage() {
                       name="width"
                       value={basePlate.width}
                       onChange={handleBasePlateChange}
-                      className="w-full p-2 border rounded-md shadow-sm"
+                      className="text-black w-full p-2 rounded-md shadow-sm shadow-black"
                       placeholder="Panjang (mm)"
                     />
-                    <span className="text-gray-500">X</span>
+                    <span className="text-black">X</span>
                     <input
                       type="number"
                       name="height"
                       value={basePlate.height}
                       onChange={handleBasePlateChange}
-                      className="w-full p-2 border rounded-md shadow-sm"
+                      className="text-black w-full p-2 rounded-md shadow-sm shadow-black"
                       placeholder="Lebar (mm)"
                     />
                   </div>
@@ -567,7 +576,7 @@ export default function SteelCutCalculatorPage() {
                       htmlFor="respectGrain"
                       className="ml-2 block text-sm text-gray-900"
                     >
-                      Respect Grain Direction (No Rotation)
+                      Ikuti Arah Potongan (Tanpa Rotasi)
                     </label>
                   </div>
                 </div>
@@ -576,7 +585,7 @@ export default function SteelCutCalculatorPage() {
               {/* Cuts List */}
               <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-gray-700 mb-3">
-                  Potongan (Cuts Needed)
+                  Ukuran Potongan (mm)
                 </h2>
                 <div className="space-y-3 max-h-[35vh] overflow-y-auto pr-2">
                   {cuts.map((cut) => (
@@ -589,16 +598,16 @@ export default function SteelCutCalculatorPage() {
                         name="width"
                         value={cut.width}
                         onChange={(e) => handleCutChange(cut.id, e)}
-                        className="w-full p-2 border rounded-md shadow-sm"
+                        className="text-black w-full p-2 border rounded-md shadow-sm"
                         placeholder="Panjang"
                       />
-                      <span className="text-gray-500">X</span>
+                      <span className="text-black">X</span>
                       <input
                         type="number"
                         name="height"
                         value={cut.height}
                         onChange={(e) => handleCutChange(cut.id, e)}
-                        className="w-full p-2 border rounded-md shadow-sm"
+                        className="text-black w-full p-2 border rounded-md shadow-sm"
                         placeholder="Lebar"
                       />
                       <input
@@ -606,7 +615,7 @@ export default function SteelCutCalculatorPage() {
                         name="quantity"
                         value={cut.quantity}
                         onChange={(e) => handleCutChange(cut.id, e)}
-                        className="w-20 p-2 border rounded-md shadow-sm"
+                        className="text-black w-20 p-2 border rounded-md shadow-sm"
                         placeholder="Pcs"
                       />
                       <button
@@ -633,7 +642,7 @@ export default function SteelCutCalculatorPage() {
                   onClick={addCut}
                   className="w-full mt-4 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-all"
                 >
-                  + Add Cut Type
+                  + Tambah Ukuran Potongan
                 </button>
               </div>
 
@@ -642,18 +651,18 @@ export default function SteelCutCalculatorPage() {
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all shadow-lg text-lg disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Calculating..." : "Calculate Layout"}
+                {isLoading ? "Menghitung..." : "Hitung Layout"}
               </button>
 
               {/* Summary / Stats */}
               {layouts.length > 0 && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                    Summary
+                    Ringkasan Hasil
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex justify-between font-bold">
-                      <span>Plates Required:</span>
+                      <span>Plat yang dibutuhkan:</span>
                       <span className="text-indigo-600">
                         {stats.platesRequired}
                       </span>
@@ -664,7 +673,7 @@ export default function SteelCutCalculatorPage() {
                       return (
                         <div key={cut.id} className="flex justify-between">
                           <span>
-                            Cut {cut.width}x{cut.height}:
+                            Potongan {cut.width}x{cut.height} (mm):
                           </span>
                           <span
                             className={`font-medium ${
@@ -673,18 +682,18 @@ export default function SteelCutCalculatorPage() {
                                 : "text-green-600"
                             }`}
                           >
-                            {placed} / {cut.quantity} placed
+                            {placed} / {cut.quantity} pcs
                           </span>
                         </div>
                       );
                     })}
                     <hr className="my-2" />
                     <div className="flex justify-between font-semibold">
-                      <span>Waste Material:</span>
+                      <span>Total Bahan Terbuang:</span>
                       <span>{stats.wasteArea.toLocaleString()} mm²</span>
                     </div>
                     <div className="flex justify-between font-semibold">
-                      <span>Overall Usage:</span>
+                      <span>Penggunaan Keseluruhan:</span>
                       <span className="text-blue-600">{stats.efficiency}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
@@ -699,7 +708,7 @@ export default function SteelCutCalculatorPage() {
             </div>
 
             {/* Right Column: Visualization */}
-            <div className="lg:col-span-2 bg-gray-100 rounded-lg min-h-[75vh] max-h-[80vh] overflow-y-auto p-4 space-y-6">
+            <div className="lg:col-span-2 bg-gray-100 rounded-lg min-h-[75vh] max-h-[80vh] overflow-y-auto p-4 space-y-6 print-results-column">
               {layouts.length > 0 ? (
                 layouts.map((layout, index) => (
                   <div
@@ -708,7 +717,7 @@ export default function SteelCutCalculatorPage() {
                   >
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-lg font-bold text-gray-800">
-                        Plate {index + 1}
+                        Plat {index + 1}
                       </h3>
                       {layout.stats && (
                         <div className="text-sm font-semibold">
@@ -742,11 +751,11 @@ export default function SteelCutCalculatorPage() {
                       />
                     </svg>
                     <h3 className="mt-2 text-sm font-medium">
-                      No Layout Calculated
+                      Tidak ada layout untuk ditampilkan
                     </h3>
                     <p className="mt-1 text-sm">
-                      Enter your dimensions and click &apos;Calculate Layout&apos; to see
-                      the results.
+                      Masukkan dimensi Anda dan klik &apos;Hitung Layout&apos; untuk melihat
+                      hasilnya.
                     </p>
                   </div>
                 </div>
